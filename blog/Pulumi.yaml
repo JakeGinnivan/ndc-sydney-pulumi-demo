@@ -1,0 +1,3 @@
+name: blog
+runtime: nodejs
+description: A super simple S3 blog
