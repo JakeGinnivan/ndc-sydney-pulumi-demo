@@ -36,10 +36,7 @@ const bucketSubscription = bucket.onObjectCreated(
                 continue
             }
 
-            const html = toPage(
-                rec.s3.bucket.name,
-                marked(data.Body.toString())
-            )
+            const html = toPage(rec.s3.bucket.name, marked(data.Body.toString()))
 
             await s3
                 .putObject({
@@ -75,25 +72,6 @@ crawlDirectory(assetsRootPath, (filePath: string) => {
     )
 })
 
-// crawlDirectory recursive crawls the provided directory, applying the provided function
-// to every file it contains. Doesn't handle cycles from symlinks.
-function crawlDirectory(dir: string, f: (_: string) => void) {
-    const files = fs.readdirSync(dir)
-
-    for (const file of files) {
-        const filePath = `${dir}/${file}`
-        const stat = fs.statSync(filePath)
-
-        if (stat.isDirectory()) {
-            crawlDirectory(filePath, f)
-        }
-
-        if (stat.isFile()) {
-            f(filePath)
-        }
-    }
-}
-
 export const bucketName = bucket.id
 export const publicUrl = bucket.websiteEndpoint
 
@@ -111,4 +89,23 @@ function toPage(title: string, content: string) {
     ${content}
 </body>
 </html>`
+}
+
+// crawlDirectory recursive crawls the provided directory, applying the provided function
+// to every file it contains. Doesn't handle cycles from symlinks.
+function crawlDirectory(dir: string, f: (_: string) => void) {
+    const files = fs.readdirSync(dir)
+
+    for (const file of files) {
+        const filePath = `${dir}/${file}`
+        const stat = fs.statSync(filePath)
+
+        if (stat.isDirectory()) {
+            crawlDirectory(filePath, f)
+        }
+
+        if (stat.isFile()) {
+            f(filePath)
+        }
+    }
 }
