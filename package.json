@@ -1,0 +1,5 @@
+{
+    "scripts": {
+        "1": "sh ./1-setup.sh"
+    }
+}
