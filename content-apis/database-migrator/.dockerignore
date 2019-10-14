@@ -1,0 +1,7 @@
+node_modules/
+.vscode/
+.editorconfig
+.env*
+scripts/
+*.log
+appspec.yml

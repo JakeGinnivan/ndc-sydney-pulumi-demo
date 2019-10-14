@@ -1,0 +1,15 @@
+FROM node:lts-alpine
+
+LABEL description="Runs the database migrations then exits"
+
+WORKDIR /code
+
+ENV NODE_ENV="production" \
+    AWS_REGION="ap-southeast-2"
+
+# Install production dependencies
+
+RUN yarn --prod
+
+# Then copy code in
+COPY ./dist/database-migator/ /code

@@ -1,0 +1,9 @@
+{
+    "name": "database-migrator",
+    "dependencies": {
+        "@types/node": "^12.7.12",
+        "@types/webpack-env": "^1.14.0",
+        "knex": "^0.19.5",
+        "minimist": "^1.2.0"
+    }
+}

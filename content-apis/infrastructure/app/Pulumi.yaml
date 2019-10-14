@@ -1,0 +1,3 @@
+name: content-api-app
+runtime: nodejs
+description: A minimal AWS TypeScript Pulumi program
