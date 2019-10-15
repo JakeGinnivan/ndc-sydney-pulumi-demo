@@ -1,13 +1,13 @@
-import Knex from "knex"
+import Knex from 'knex'
 
 // Hack to support require.context in tests
-if (process.env.NODE_ENV === "test" && typeof require.context === "undefined") {
+if (process.env.NODE_ENV === 'test' && typeof require.context === 'undefined') {
     /* eslint-disable @typescript-eslint/no-var-requires */
-    const fs = require("fs")
-    const path = require("path")
+    const fs = require('fs')
+    const path = require('path')
     /* eslint-enable @typescript-eslint/no-var-requires */
 
-    const requireContext = (base = ".", scanSubDirectories = false, regularExpression = /\.js$/) => {
+    const requireContext = (base = '.', scanSubDirectories = false, regularExpression = /\.js$/) => {
         const files: { [fullPath: string]: true } = {}
 
         function readDirectory(directory: string) {
@@ -28,7 +28,7 @@ if (process.env.NODE_ENV === "test" && typeof require.context === "undefined") {
         readDirectory(path.resolve(__dirname, base))
 
         if (Object.keys(files).length === 0) {
-            throw new Error("No migrations found")
+            throw new Error('No migrations found')
         }
 
         function Module(file: string) {
@@ -43,20 +43,14 @@ if (process.env.NODE_ENV === "test" && typeof require.context === "undefined") {
 }
 
 export class WebpackMigrationSource {
-    constructor(
-        private migrationContext: __WebpackModuleApi.RequireContext,
-        private shouldRunScript: (script: string) => boolean = () => true
-    ) {}
+    constructor(private migrationContext: __WebpackModuleApi.RequireContext) {}
 
     /**
      * Gets the migration names
      * @returns Promise<string[]>
      */
     getMigrations() {
-        const migrations = this.migrationContext
-            .keys()
-            .filter(this.shouldRunScript)
-            .sort()
+        const migrations = this.migrationContext.keys().sort()
 
         return Promise.resolve(migrations)
     }

@@ -56,20 +56,14 @@ const assetsRootPath = path.join(__dirname, "files")
 crawlDirectory(assetsRootPath, (filePath: string) => {
     const relativeFilePath = filePath.replace(assetsRootPath + "/", "")
 
-    new aws.s3.BucketObject(
-        relativeFilePath,
-        {
-            key: relativeFilePath,
+    new aws.s3.BucketObject(relativeFilePath, {
+        key: relativeFilePath,
 
-            acl: "private",
-            bucket,
-            contentType: mime.getType(filePath) || undefined,
-            source: new pulumi.asset.FileAsset(filePath)
-        },
-        {
-            parent: bucketSubscription.func
-        }
-    )
+        acl: "private",
+        bucket,
+        contentType: mime.getType(filePath) || undefined,
+        source: new pulumi.asset.FileAsset(filePath)
+    })
 })
 
 export const bucketName = bucket.id

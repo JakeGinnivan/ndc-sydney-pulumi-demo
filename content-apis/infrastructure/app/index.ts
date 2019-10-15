@@ -1,19 +1,26 @@
-import * as pulumi from "@pulumi/pulumi"
-import * as aws from "@pulumi/aws"
-import * as awsx from "@pulumi/awsx"
+import * as pulumi from '@pulumi/pulumi'
+import * as aws from '@pulumi/aws'
+import * as awsx from '@pulumi/awsx'
+
+import { ContentApiDatabase } from './database'
 
 const env = pulumi.getStack()
-const shared = new pulumi.StackReference(`branch-deploys`)
+const config = new pulumi.Config()
+const shared = new pulumi.StackReference('shared-infra-stack', { name: config.get('shared-stack-name') || env })
 
-const fargateClusterId = shared.requireOutput("fargateClusterId")
-const fargateClusterName = shared.requireOutput("fargateClusterUrn")
+const fargateClusterName = shared.requireOutput('fargateClusterName')
+const databaseProviderId = shared.requireOutput('databaseProviderId')
 
-// const dbCluster = aws.rds.Cluster.get(sharedDbName, sharedDbProviderId)
+const dbCluster = aws.rds.Cluster.get('aurora', databaseProviderId)
 
-const vpc = new awsx.ec2.Vpc("content-platform-vpc", {
-    vpc: aws.ec2.Vpc.get("content-platform-vpc", "vpc-08998f718417ed205")
+const fargate = new awsx.ecs.Cluster('fargate-cluster', {
+    cluster: aws.ecs.Cluster.get('fargate-cluster', fargateClusterName),
 })
-const fargate = new awsx.ecs.Cluster(`fargate-cluser-branch-deploys`, {
-    cluster: aws.ecs.Cluster.get("fargate-cluser-branch-deploys", "fargate-cluser-branch-deploys"),
-    vpc
+
+new ContentApiDatabase('database', {
+    aurora: dbCluster,
+    cluster: fargate,
+    databaseName: env,
+    enableDrop: config.getBoolean('enableDrop'),
+    recreate: config.getBoolean('recreateDbOnUpdate'),
 })
