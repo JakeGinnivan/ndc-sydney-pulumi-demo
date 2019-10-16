@@ -26,23 +26,45 @@ interface FargateTaskInputs extends FargateRunTask {
 
 const fargateTaskResourceProvider: pulumi.dynamic.ResourceProvider = {
     async create(inputs: FargateTaskInputs) {
-        const results = await runFargateTask(inputs)
+        const { exitCode, taskArn } = await runFargateTask(inputs)
+
+        if (exitCode !== 0) {
+            throw new Error(`Task run failed: ${taskArn}`)
+        }
 
         return {
-            ...results,
-            id: 'task-id',
+            id: 'not-needed',
+            taskArn,
         }
     },
 
     async update(_id, _oldInputs: FargateTaskInputs, newInputs: FargateTaskInputs) {
+        const { exitCode, taskArn } = await runFargateTask(newInputs)
+        if (exitCode !== 0) {
+            throw new Error(`Task run failed: ${taskArn}`)
+        }
+
         return {
-            outs: await runFargateTask(newInputs),
+            outs: { taskArn },
         }
     },
 
     async delete(id, inputs: FargateTaskInputs) {
         if (inputs.deleteTaskDefinitionArn) {
-            await runFargateTask({ ...inputs, taskDefinitionArn: inputs.deleteTaskDefinitionArn })
+            const { exitCode, taskArn } = await runFargateTask({
+                ...inputs,
+                taskDefinitionArn: inputs.deleteTaskDefinitionArn,
+            })
+
+            if (exitCode !== 0) {
+                throw new Error(`Task run failed: ${taskArn}`)
+            }
+        }
+    },
+
+    async diff() {
+        return {
+            changes: true,
         }
     },
 }
@@ -71,13 +93,16 @@ export class FargateTask extends pulumi.dynamic.Resource {
             securityGroupIds,
         }
 
-        const mergedOptions = pulumi.mergeOptions(opts, {
-            dependsOn: args.deleteTask
-                ? [args.cluster, args.taskDefinition, args.deleteTask]
-                : [args.cluster, args.taskDefinition],
-        })
-        super(fargateTaskResourceProvider, name, resourceArgs, mergedOptions)
+        // const mergedOptions = pulumi.mergeOptions(opts, {
+        //     dependsOn: args.deleteTask
+        //         ? [args.cluster, args.taskDefinition, args.deleteTask]
+        //         : [args.cluster, args.taskDefinition],
+        // })
+
+        super(fargateTaskResourceProvider, name, { taskArn: undefined, ...resourceArgs }, opts)
     }
+
+    public readonly /*out*/ taskArn!: pulumi.Output<string>
 }
 
 async function runFargateTask(inputs: FargateRunTask) {
@@ -99,8 +124,41 @@ async function runFargateTask(inputs: FargateRunTask) {
         })
         .promise()
 
+    if (!result.tasks) {
+        throw new Error('Missing tasks')
+    }
+    if (result.tasks.length !== 1) {
+        throw new Error(`Unexpected number of tasks: ${result.tasks.length}`)
+    }
+
+    const task = result.tasks[0]
+    if (!task.taskArn) {
+        throw new Error(`Task missing taskArn`)
+    }
+    const taskArn = task.taskArn
+
+    const runResult = await ecs
+        .waitFor('tasksStopped', {
+            tasks: [taskArn],
+            cluster: inputs.clusterArn,
+        })
+        .promise()
+
+    if (!runResult.tasks) {
+        throw new Error('Missing tasks')
+    }
+    if (runResult.tasks.length !== 1) {
+        throw new Error(`Unexpected number of tasks: ${runResult.tasks.length}`)
+    }
+    if (!runResult.tasks[0].containers) {
+        throw new Error('Task status is missing container')
+    }
+    if (runResult.tasks[0].containers.length !== 1) {
+        throw new Error(`Unexpected number of containers: ${runResult.tasks[0].containers.length}`)
+    }
+
     return {
-        tasks: (result.tasks || []).map(task => task.taskArn),
-        failures: result.failures,
+        taskArn,
+        exitCode: runResult.tasks[0].containers[0].exitCode,
     }
 }

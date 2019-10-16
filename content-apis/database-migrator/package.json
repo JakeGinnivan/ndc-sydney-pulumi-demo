@@ -1,9 +1,22 @@
 {
     "name": "database-migrator",
+    "scripts": {
+        "build": "node ./node_modules/.bin/webpack-cli --mode=production --config=./webpack.config.js"
+    },
     "dependencies": {
+        "@types/minimist": "^1.2.0",
         "@types/node": "^12.7.12",
         "@types/webpack-env": "^1.14.0",
+        "clean-webpack-plugin": "^3.0.0",
         "knex": "^0.19.5",
-        "minimist": "^1.2.0"
-    }
+        "minimist": "^1.2.0",
+        "pg": "^7.12.1",
+        "ts-loader": "^6.2.0",
+        "tsconfig-paths-webpack-plugin": "^3.2.0",
+        "typescript": "^3.6.4",
+        "webpack": "^4.41.2",
+        "webpack-cli": "^3.3.9",
+        "webpack-node-externals": "^1.7.2"
+    },
+    "devDependencies": {}
 }

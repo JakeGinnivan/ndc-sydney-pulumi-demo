@@ -1,5 +1,3 @@
-import Knex from 'knex'
-
 // Hack to support require.context in tests
 if (process.env.NODE_ENV === 'test' && typeof require.context === 'undefined') {
     /* eslint-disable @typescript-eslint/no-var-requires */

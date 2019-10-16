@@ -2,8 +2,8 @@ import { migrate } from './run-migration'
 import Knex from 'knex'
 
 export interface CommandLineArgs {
-    appName: string | undefined
-    dbConnectionString: string | undefined
+    appName: string
+    dbConnectionString: string
 }
 export async function migrator(config: CommandLineArgs) {
     migrate({

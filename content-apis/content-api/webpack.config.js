@@ -1,7 +1,7 @@
 /* eslint-disable no-undef, @typescript-eslint/no-var-requires */
 var path = require('path')
 var nodeExternals = require('webpack-node-externals')
-var CleanWebpackPlugin = require('clean-webpack-plugin')
+var { CleanWebpackPlugin } = require('clean-webpack-plugin')
 var TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin')
 
 module.exports = {
@@ -28,7 +28,7 @@ module.exports = {
         plugins: [new TsconfigPathsPlugin()],
     },
     output: {
-        filename: 'database-migrator.js',
+        filename: 'index.js',
         path: path.resolve(__dirname, 'dist'),
         devtoolModuleFilenameTemplate: '[absolute-resource-path]',
     },

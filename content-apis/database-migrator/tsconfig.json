@@ -1,0 +1,19 @@
+{
+    "compilerOptions": {
+        "target": "es2018",
+        "module": "commonjs",
+        "moduleResolution": "node",
+        "esModuleInterop": true,
+        "noEmit": true,
+        "noImplicitReturns": true,
+        "strict": true,
+        "noImplicitAny": true,
+        "sourceMap": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "removeComments": false,
+        "lib": ["es2018", "dom"],
+        "newLine": "LF",
+        "baseUrl": "."
+    }
+}

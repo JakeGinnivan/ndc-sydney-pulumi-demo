@@ -7,6 +7,7 @@ import { FargateTask } from './fargate-task'
 export interface ContentApiDatabaseArgs {
     cluster: awsx.ecs.Cluster
     aurora: aws.rds.Cluster
+    masterPassword: string
     databaseName: pulumi.Input<string>
     recreate?: pulumi.Input<boolean>
     enableDrop?: pulumi.Input<boolean>
@@ -18,11 +19,11 @@ export class ContentApiDatabase extends pulumi.ComponentResource {
         super('aurora:db', name, {}, opts)
 
         const masterConnectionString = pulumi
-            .all([args.aurora.masterUsername, args.aurora.masterPassword, args.aurora.endpoint])
+            .all([args.aurora.masterUsername, args.masterPassword, args.aurora.endpoint])
             .apply(([username, password, endpoint]) => `pg://${username}:${password}@${endpoint}/postgres`)
 
         const connectionString = pulumi
-            .all([args.aurora.masterUsername, args.aurora.masterPassword, args.aurora.endpoint])
+            .all([args.aurora.masterUsername, args.masterPassword, args.aurora.endpoint])
             .apply(([username, password, endpoint]) => `pg://${username}:${password}@${endpoint}/${args.databaseName}`)
 
         const DatabaseMigratorImage = awsx.ecs.Image.fromPath('database-migrator-image', '../../database-migrator')
@@ -39,6 +40,7 @@ export class ContentApiDatabase extends pulumi.ComponentResource {
                         .all([masterConnectionString])
                         .apply(([connectionString]) => [
                             'node',
+                            'database-migrator.js',
                             'create-db',
                             `--masterConnectionString=${connectionString}`,
                             `--databaseName=${args.databaseName}`,
@@ -60,6 +62,7 @@ export class ContentApiDatabase extends pulumi.ComponentResource {
                         .all([masterConnectionString])
                         .apply(([connectionString]) => [
                             'node',
+                            'database-migrator.js',
                             'drop-db',
                             `--masterConnectionString=${connectionString}`,
                             `--databaseName=${args.databaseName}`,
@@ -81,6 +84,7 @@ export class ContentApiDatabase extends pulumi.ComponentResource {
             },
             {
                 parent: this,
+                dependsOn: args.enableDrop ? [createDbTaskDefinition, dropDbTaskDefinition] : [createDbTaskDefinition],
             },
         )
 
@@ -95,7 +99,13 @@ export class ContentApiDatabase extends pulumi.ComponentResource {
                     environment: [],
                     command: pulumi
                         .all([connectionString])
-                        .apply(([cs]) => ['node', `--connectionString=${cs}`, `--databaseName=${args.databaseName}`]),
+                        .apply(([cs]) => [
+                            'node',
+                            'database-migrator.js',
+                            `--connectionString=${cs}`,
+                            `--databaseName=${args.databaseName}`,
+                            '--app=newssite',
+                        ]),
                 },
             },
             {
@@ -103,7 +113,7 @@ export class ContentApiDatabase extends pulumi.ComponentResource {
             },
         )
 
-        new FargateTask(
+        const dbMigratorTask = new FargateTask(
             'run-db-migrations',
             {
                 cluster: this.args.cluster,
@@ -111,8 +121,18 @@ export class ContentApiDatabase extends pulumi.ComponentResource {
             },
             {
                 parent: this,
-                dependsOn: createDbTask,
+                dependsOn: [createDbTask, runMigrationsTask],
             },
         )
+
+        this.createDbTaskArn = createDbTask.taskArn
+        this.dbMigrateTaskArn = dbMigratorTask.taskArn
+        this.registerOutputs({
+            createDbTaskArn: this.createDbTaskArn,
+            dbMigrateTaskArn: this.dbMigrateTaskArn,
+        })
     }
+
+    public readonly /*out*/ createDbTaskArn: pulumi.Output<string>
+    public readonly /*out*/ dbMigrateTaskArn: pulumi.Output<string>
 }

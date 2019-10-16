@@ -2,7 +2,8 @@ import Knex from 'knex'
 
 export async function up(db: Knex) {
     await db.schema
-        .createTable('Article', table => {
+        .createTable('article', table => {
+            table.increments('id')
             table.string('id').primary()
             table
                 .string('slug')

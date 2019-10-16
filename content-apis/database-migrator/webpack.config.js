@@ -1,7 +1,7 @@
 /* eslint-disable no-undef, @typescript-eslint/no-var-requires */
 var path = require('path')
 var nodeExternals = require('webpack-node-externals')
-var CleanWebpackPlugin = require('clean-webpack-plugin')
+var { CleanWebpackPlugin } = require('clean-webpack-plugin')
 var TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin')
 
 module.exports = {

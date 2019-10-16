@@ -19,6 +19,14 @@ if (argv._.includes('create-db')) {
     // Idea: we could set a no-delete bit inside the db for extra protection
     dropDb(masterConnectionString, databaseName)
 } else {
+    if (!argv.app) {
+        console.error('--app argument not specified')
+        process.exit(1)
+    }
+    if (!argv.connectionString) {
+        console.error('--connectionString argument not specified')
+        process.exit(1)
+    }
     migrator({
         appName: argv.app,
         dbConnectionString: argv.connectionString,

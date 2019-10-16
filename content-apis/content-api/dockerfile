@@ -2,18 +2,19 @@ FROM node:lts-alpine
 
 LABEL description="Runs the database migrations then exits"
 
-WORKDIR /code
-EXPOSE 3500
+WORKDIR /
 
 ENV NODE_ENV="production" \
     AWS_REGION="ap-southeast-2" \
-    DB_CONNECTION_STRING=""
+    CONNECTION_STRING=""
 
-# Install production dependencies
-RUN yarn --prod
+COPY src/ /src
+COPY package.json package-lock.json webpack.config.js tsconfig.json /
 
-# Then copy code in
-COPY ./dist/ /code
+RUN npm install
+RUN npm run build
 
+WORKDIR /dist
+EXPOSE 80
 
-CMD node /code/index.js
+CMD node index.js
