@@ -41,13 +41,10 @@ new awsx.ecs.FargateService(
     {
         cluster: fargate,
         taskDefinitionArgs: {
-            containers: {
-                api: {
-                    image: ContentApiImage,
-                    memory: 512,
-                    portMappings: [apiListener],
-                    environment: connectionString.apply(e => [{ name: 'CONNECTION_STRING', value: e }]),
-                },
+            container: {
+                image: ContentApiImage,
+                portMappings: [apiListener],
+                environment: connectionString.apply(e => [{ name: 'CONNECTION_STRING', value: e }]),
             },
         },
     },

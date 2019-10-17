@@ -19,7 +19,7 @@ app.get('/articles', async (_req, res) => {
 
         res.json(articles)
     } catch (err) {
-        console.log('POST /articles failed', err)
+        console.log('GET /articles failed:', err ? err.message : '')
         res.status(500).send()
     }
 })
@@ -46,7 +46,7 @@ app.post('/articles', async (req, res) => {
 
         res.status(201).json({ id })
     } catch (err) {
-        console.log('POST /articles failed', err)
+        console.log('POST /articles failed:', err ? err.message : '')
         res.status(500).send()
     }
 })

@@ -1,6 +1,6 @@
 FROM node:lts-alpine
 
-LABEL description="Runs the database migrations then exits"
+LABEL description="Content API"
 
 WORKDIR /
 
