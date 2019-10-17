@@ -34,7 +34,7 @@ app.post('/articles', async (req, res) => {
             heading: body.heading,
             topics: body.topics,
             publicationDate: body.publicationDate,
-            static: 'live',
+            status: 'live',
         })
         .returning('id')
 
