@@ -7,38 +7,48 @@ const app = express()
 app.use(express.json())
 
 app.get('/articles', async (_req, res) => {
-    const knex = Knex({
-        connection: process.env.CONNECTION_STRING,
-        client: 'pg',
-    })
+    try {
+        const knex = Knex({
+            connection: process.env.CONNECTION_STRING,
+            client: 'pg',
+        })
 
-    const articles = await knex('article')
-        .limit(100)
-        .select('*')
+        const articles = await knex('article')
+            .limit(100)
+            .select('*')
 
-    res.json(articles)
+        res.json(articles)
+    } catch (err) {
+        console.log('POST /articles failed', err)
+        res.status(500).send()
+    }
 })
 
 app.post('/articles', async (req, res) => {
-    const knex = Knex({
-        connection: process.env.CONNECTION_STRING,
-        client: 'pg',
-    })
-
-    const body = req.body
-
-    const { id } = await knex('article')
-        .insert({
-            slug: body.slug,
-            kind: body.kind,
-            heading: body.heading,
-            topics: body.topics,
-            publicationDate: body.publicationDate,
-            status: 'live',
+    try {
+        const knex = Knex({
+            connection: process.env.CONNECTION_STRING,
+            client: 'pg',
         })
-        .returning('id')
 
-    res.status(201).json({ id })
+        const body = req.body
+
+        const { id } = await knex('article')
+            .insert({
+                slug: body.slug,
+                kind: body.kind,
+                heading: body.heading,
+                topics: body.topics,
+                publicationDate: body.publicationDate,
+                status: 'live',
+            })
+            .returning('id')
+
+        res.status(201).json({ id })
+    } catch (err) {
+        console.log('POST /articles failed', err)
+        res.status(500).send()
+    }
 })
 
 const errorHandler: express.ErrorRequestHandler = (err, req, res) => {
