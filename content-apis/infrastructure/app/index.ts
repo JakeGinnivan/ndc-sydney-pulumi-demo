@@ -24,8 +24,8 @@ const database = new ContentApiDatabase('database', {
     cluster: fargate,
     databaseName: env,
     masterPassword: 'in_secrets_managment',
-    enableDrop: config.getBoolean('enableDrop'),
-    recreate: config.getBoolean('recreateDbOnUpdate'),
+    enableDrop: config.getBoolean('content-api-app:enableDrop'),
+    recreate: config.getBoolean('content-api-app:recreateDbOnUpdate'),
 })
 
 const ContentApiImage = awsx.ecs.Image.fromPath('api', '../../content-api')
