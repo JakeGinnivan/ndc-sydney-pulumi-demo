@@ -35,9 +35,11 @@ const connectionString = pulumi
     .apply(([username, endpoint]) => `pg://${username}:in_secrets_managment@${endpoint}/${env}`)
 
 const apiListener = new awsx.elasticloadbalancingv2.NetworkListener('api', { port: 80 })
+
 new awsx.ecs.FargateService(
     'api',
     {
+        cluster: fargate,
         taskDefinitionArgs: {
             containers: {
                 api: {
