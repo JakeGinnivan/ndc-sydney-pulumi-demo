@@ -9,7 +9,7 @@
         "@types/webpack-env": "^1.14.0",
         "clean-webpack-plugin": "^3.0.0",
         "knex": "^0.19.5",
-        "minimist": "^1.2.0",
+        "minimist": "^1.2.2",
         "pg": "^7.12.1",
         "ts-loader": "^6.2.0",
         "tsconfig-paths-webpack-plugin": "^3.2.0",
