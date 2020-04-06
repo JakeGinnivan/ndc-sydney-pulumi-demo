@@ -9,6 +9,6 @@
         "@pulumi/pulumi": "^1.0.0",
         "@types/minimist": "^1.2.0",
         "knex": "^0.19.5",
-        "minimist": "^1.2.0"
+        "minimist": "^1.2.3"
     }
 }
